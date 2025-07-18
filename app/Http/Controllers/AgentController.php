@@ -8,27 +8,86 @@ use App\Models\Agent;
 class AgentController extends Controller
 {
     // get all agents
-    // public function getAll() {
-    //     foreach (Agent::all() as $agent) {
-    //         echo $agent->name;
-    //     }
-    // }
+    public function getAll() {
+        foreach (Agent::all() as $agent) {
+            echo $agent->name;
+        }
+    }
 
     // to get specific agents 
-    // $agents = Agent::where('active', 1)
-    //     ->orderBy('title')
-    //     ->limit(10)
-    //     ->get();
+    public function getSpecificAgents() {
+        $agents = Agent::where('active', 1)
+            ->orderBy('title')
+            ->limit(10)
+            ->get();
+
+        return $agents;
+    }
 
     // refresh(): reload data from db into the same object
-    // $agent = Agent::where('title', 'Agent')->first();
-    // $agent->title = 'Chatbot'; // this will change it locally
-    // $agent->refresh(); // reset back to db value main one
-    // echo $agent->title; // shows original db value
+    public function Refresh() {
+        $agent = Agent::where('title', 'Agent')->first();
+        $agent->title = 'Chatbot'; // local change
+        $agent->refresh(); // revert
+        return $agent->title;
+    }
 
     // fresh(): get a new copy from db while the original stays the same
-    // $agent = Agent::where('title', 'Agent')->first();
-    // $freshAgent = $agent->fresh(); // new object with real db data
+    public function Fresh() {
+        $agent = Agent::where('title', 'Agent')->first();
+        $freshAgent = $agent->fresh(); // new object
+        return $freshAgent;
+    }
+
+
+    // reject(): remove items that no longer match the requirement 
+   public function Reject() {
+        $agents = Agent::where('model_type', 'Chatboot')->get();
+
+        $filtered = $agents->reject(function (Agent $agent) {
+            return $agent->cancelled;
+        });
+
+        return $filtered->values(); 
+    }
+
+   // chunk(): break down big data into small chunks and loop through each
+   // chunkById(): chunk based on ID so it doesn't mess with data order during updates
+    public function demoChunkById() {
+        Agent::where('is_active', true)
+            ->chunkById(200, function (Collection $agents) {
+                $agents->each->update(['is_active' => false]);
+            }, column: 'id');
+
+        return "Updated in chunks!";
+    }
+
+
+   // lazy(): loads row by row behind the scenes in chunks but we don’t see the batch
+   public function demoLazy() {
+        foreach (Agent::where('is_active', true)->lazy() as $agent) {
+            $agent->update(['is_active' => false]);
+        }
+
+        return "Updated lazily!";
+    }
+
+
+   // lazyById(): safer for updating when filtering by a column that’s being updated
+   public function demoLazyById() {
+        Agent::where('is_active', true)
+            ->lazyById(200)
+            ->each(function ($agent) {
+                $agent->update(['is_active' => false]);
+            });
+
+        return "Updated using lazyById!";
+    }
+
+
+
+
+
 
     
    
