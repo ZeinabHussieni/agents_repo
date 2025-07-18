@@ -88,12 +88,35 @@ class AgentController extends Controller
     // addSelect lets us add a new column to the query result
     public static function getWithLastAgent()
     {
-        return self::addSelect([
+        return Destination::addSelect([
            'last_agent' => Agent::select('name')
             ->whereColumn('destination_id', 'destinations.id')
             ->limit(1)
        ])->get();
    }
+
+   //updateOrcreate
+   function UpdateOrCreate(){
+    $agent = Agent::updateOrCreate(
+        ['name'=>'Chatbot','is_active'=>0]
+    );
+   }
+
+   //we can update records based on specific conditions
+   function UpdateActiveAgent(){
+    Agent::where('is_active', 1)
+    ->where('destination', 'Lebanon')
+    ->update(['is_active'=>0]);
+   }
+
+   //upsert lets us search by specific columns update if found or create if not
+   function upsert(){
+      Agent::upsert([
+         ['distination' => 'lebanon', 'is_action' => 0],
+        ], uniqueBy: ['destination'], update: ['is_action']);
+    }
+
+
 
 
 
